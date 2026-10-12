@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_GuideAllocation" name="Guide Allocation DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.49.0">
+  <decision id="match-guide-rule" name="Match Available Guide by Domain &amp; Load">
+    <decisionTable id="DecisionTable_GuideMatch" hitPolicy="FIRST">
+      <input id="Input_Domain" label="Project Domain">
+        <inputExpression id="InputExpr_Domain" typeRef="string">
+          <text>domain</text>
+        </inputExpression>
+      </input>
+      <input id="Input_TeamSize" label="Team Size">
+        <inputExpression id="InputExpr_TeamSize" typeRef="integer">
+          <text>teamSize</text>
+        </inputExpression>
+      </input>
+      <output id="Output_GuideName" label="Assigned Faculty Guide" name="assignedGuide" typeRef="string" />
+      <output id="Output_MatchStatus" label="Allocation Status" name="allocationStatus" typeRef="string" />
+      
+      <!-- Rule 1: AI / Robotics Domain -->
+      <rule id="Rule_AI">
+        <description>Match Dr. Anita Sharma for AI &amp; Robotics projects</description>
+        <inputEntry id="UnaryTests_AI_1">
+          <text>"AI / Robotics"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_AI_2">
+          <text>&lt;= 4</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_AI_1">
+          <text>"Dr. Anita Sharma"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_AI_2">
+          <text>"MATCHED"</text>
+        </outputEntry>
+      </rule>
+
+      <!-- Rule 2: Cloud Systems Domain -->
+      <rule id="Rule_Cloud">
+        <description>Match Prof. S. Rao for Cloud Systems</description>
+        <inputEntry id="UnaryTests_Cloud_1">
+          <text>"Cloud Systems"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Cloud_2">
+          <text>&lt;= 4</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Cloud_1">
+          <text>"Prof. Suresh Rao"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Cloud_2">
+          <text>"MATCHED"</text>
+        </outputEntry>
+      </rule>
+
+      <!-- Rule 3: Cybersecurity Domain -->
+      <rule id="Rule_Security">
+        <description>Match Dr. Meera Patel for Cybersecurity</description>
+        <inputEntry id="UnaryTests_Sec_1">
+          <text>"Cybersecurity"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Sec_2">
+          <text>&lt;= 4</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Sec_1">
+          <text>"Dr. Meera Patel"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Sec_2">
+          <text>"MATCHED"</text>
+        </outputEntry>
+      </rule>
+
+      <!-- Rule 4: Domain Overload Fallback (F8) -->
+      <rule id="Rule_Overload">
+        <description>No matching faculty available - escalate to coordinator</description>
+        <inputEntry id="UnaryTests_Overload_1">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Overload_2">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Overload_1">
+          <text>"None"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Overload_2">
+          <text>"NONE_AVAILABLE"</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram id="DMNDiagram_GuideMatch">
+      <dmndi:DMNShape id="DMNShape_match-guide-rule" dmnElementRef="match-guide-rule">
+        <dc:Bounds height="80" width="180" x="160" y="100" />
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>

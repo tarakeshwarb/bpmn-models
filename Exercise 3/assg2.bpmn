@@ -1,0 +1,946 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn2:definitions xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:bioc="http://bpmn.io/schema/bpmn/biocolor/1.0" xmlns:color="http://www.omg.org/spec/BPMN/non-normative/color/1.0" id="Definitions_Logistics" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.49.0">
+  <bpmn2:collaboration id="Collaboration_Logistics">
+    <bpmn2:participant id="Participant_Courier" name="Courier Company Logistics" processRef="Process_Logistics" />
+  </bpmn2:collaboration>
+  <bpmn2:process id="Process_Logistics" name="Logistics and Shipment Exception Management" isExecutable="true">
+    <bpmn2:laneSet id="LaneSet_Logistics">
+      <bpmn2:lane id="Lane_Shipper" name="Shipper / Customer">
+        <bpmn2:flowNodeRef>StartEvent_Booking</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>UserTask_CorrectBooking</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>EndEvent_PickupCancelled</bpmn2:flowNodeRef>
+      </bpmn2:lane>
+      <bpmn2:lane id="Lane_Dispatcher" name="Control Tower / Dispatcher">
+        <bpmn2:extensionElements>
+          <camunda:properties>
+            <camunda:property />
+          </camunda:properties>
+        </bpmn2:extensionElements>
+        <bpmn2:flowNodeRef>ParallelGateway_Split</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>ServiceTask_NotifyCustomer</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>EventBasedGateway_Tracking</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>MessageEvent_ScanReceived</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>ExclusiveGateway_PickupCheck</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>BusinessRuleTask_ValidateBooking</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>ServiceTask_SchedulePickup</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>ExclusiveGateway_ValidBooking</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>UserTask_ReschedulePickup</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>ParallelGateway_Join</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>UserTask_CloseShipment</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>EndEvent_Delivered</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>UserTask_RerouteShipment</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>TimerEvent_48HrScan</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>EndEvent_Lost</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>TimerEvent_5DayTrace</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>ServiceTask_InitiateTracing</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>EventBasedGateway_Customs</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>MessageEvent_DocsReceived</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>UserTask_StopShipment</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>TimerEvent_CustomsTimer</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>EndEvent_Cancelled</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>ServiceTask_CustomsHold</bpmn2:flowNodeRef>
+      </bpmn2:lane>
+      <bpmn2:lane id="Lane_PickupAgent" name="Pickup Agent">
+        <bpmn2:flowNodeRef>ManualTask_CollectScanParcel</bpmn2:flowNodeRef>
+      </bpmn2:lane>
+      <bpmn2:lane id="Lane_Warehouse" name="Hub / Warehouse">
+        <bpmn2:flowNodeRef>ServiceTask_SortScanParcel</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>ExclusiveGateway_HubRouting</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>UserTask_InspectDamage</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>ExclusiveGateway_InsuranceCheck</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>ServiceTask_RecordDamage</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>EndEvent_DamageReturned</bpmn2:flowNodeRef>
+      </bpmn2:lane>
+      <bpmn2:lane id="Lane_ClaimsDepartment" name="Claims Department">
+        <bpmn2:flowNodeRef>EndEvent_ClaimSettled</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>SubProcess_Claims</bpmn2:flowNodeRef>
+      </bpmn2:lane>
+      <bpmn2:lane id="Lane_DeliveryAgent" name="Delivery Agent">
+        <bpmn2:flowNodeRef>ServiceTask_DispatchParcel</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>UserTask_DeliverParcel</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>UserTask_RetryDelivery</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>ExclusiveGateway_AttemptCheck</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>UserTask_ReturnToSender</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>TimerEvent_DepotHold</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>EndEvent_Returned</bpmn2:flowNodeRef>
+      </bpmn2:lane>
+      <bpmn2:lane id="Lane_Recipient" name="Recipient">
+        <bpmn2:flowNodeRef>UserTask_ReceiveParcel</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>ExclusiveGateway_DeliveryOutcome</bpmn2:flowNodeRef>
+      </bpmn2:lane>
+    </bpmn2:laneSet>
+    <bpmn2:sequenceFlow id="Flow_Return_End" sourceRef="UserTask_ReturnToSender" targetRef="EndEvent_Returned" />
+    <bpmn2:sequenceFlow id="Flow_DepotTimeout" sourceRef="TimerEvent_DepotHold" targetRef="UserTask_ReturnToSender" />
+    <bpmn2:sequenceFlow id="Flow_AttemptLimitExceeded" name="Attempts &#62; 3" sourceRef="ExclusiveGateway_AttemptCheck" targetRef="TimerEvent_DepotHold">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">deliveryAttempts &gt; 3</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="Flow_8" sourceRef="UserTask_RetryDelivery" targetRef="ExclusiveGateway_AttemptCheck" />
+    <bpmn2:sequenceFlow id="Flow_RetryMore" name="Attempts &#60;= 3" sourceRef="ExclusiveGateway_AttemptCheck" targetRef="UserTask_DeliverParcel">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">deliveryAttempts &lt;= 3</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="Flow_6" sourceRef="ServiceTask_DispatchParcel" targetRef="UserTask_DeliverParcel" />
+    <bpmn2:sequenceFlow id="Flow_Claims_End" sourceRef="SubProcess_Claims" targetRef="EndEvent_ClaimSettled" />
+    <bpmn2:sequenceFlow id="Flow_Damage_End" sourceRef="ServiceTask_RecordDamage" targetRef="EndEvent_DamageReturned" />
+    <bpmn2:sequenceFlow id="Flow_NotInsured" name="Not Insured" sourceRef="ExclusiveGateway_InsuranceCheck" targetRef="ServiceTask_RecordDamage">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">isInsured == false</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="Flow_Insured" name="Insured" sourceRef="ExclusiveGateway_InsuranceCheck" targetRef="SubProcess_Claims">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">isInsured == true</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="Flow_Cancel_End" sourceRef="UserTask_StopShipment" targetRef="EndEvent_Cancelled" />
+    <bpmn2:sequenceFlow id="Flow_Customs_Timeout" sourceRef="TimerEvent_CustomsTimer" targetRef="UserTask_StopShipment" />
+    <bpmn2:sequenceFlow id="Flow_Customs_Cleared" name="Cleared" sourceRef="MessageEvent_DocsReceived" targetRef="ServiceTask_DispatchParcel" />
+    <bpmn2:sequenceFlow id="Flow_Customs_Timer" sourceRef="EventBasedGateway_Customs" targetRef="TimerEvent_CustomsTimer" />
+    <bpmn2:sequenceFlow id="Flow_Customs_Doc" sourceRef="EventBasedGateway_Customs" targetRef="MessageEvent_DocsReceived" />
+    <bpmn2:sequenceFlow id="Flow_Customs_Wait" sourceRef="ServiceTask_CustomsHold" targetRef="EventBasedGateway_Customs" />
+    <bpmn2:sequenceFlow id="Flow_RecipientUnavail" name="Recipient Unavailable" sourceRef="ExclusiveGateway_DeliveryOutcome" targetRef="UserTask_RetryDelivery">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">deliveryStatus == "Unavailable"</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="Flow_RefusedCOD" name="Refusal / Failed COD" sourceRef="ExclusiveGateway_DeliveryOutcome" targetRef="UserTask_ReturnToSender">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">deliveryStatus == "Refused"</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="Flow_7" sourceRef="UserTask_ReceiveParcel" targetRef="ExclusiveGateway_DeliveryOutcome" />
+    <bpmn2:sequenceFlow id="Flow_Deliver_Recipient" sourceRef="UserTask_DeliverParcel" targetRef="UserTask_ReceiveParcel" />
+    <bpmn2:sequenceFlow id="Flow_Trace_Wait" sourceRef="ServiceTask_InitiateTracing" targetRef="TimerEvent_5DayTrace" />
+    <bpmn2:sequenceFlow id="Flow_Lost_End" sourceRef="TimerEvent_5DayTrace" targetRef="EndEvent_Lost" />
+    <bpmn2:sequenceFlow id="Flow_Trace_Trigger" sourceRef="TimerEvent_48HrScan" targetRef="ServiceTask_InitiateTracing" />
+    <bpmn2:sequenceFlow id="Flow_Reroute_Done" sourceRef="UserTask_RerouteShipment" targetRef="ServiceTask_DispatchParcel" />
+    <bpmn2:sequenceFlow id="Flow_10" sourceRef="UserTask_CloseShipment" targetRef="EndEvent_Delivered" />
+    <bpmn2:sequenceFlow id="Flow_9" sourceRef="ParallelGateway_Join" targetRef="UserTask_CloseShipment" />
+    <bpmn2:sequenceFlow id="Flow_DeliveredOK" name="Delivered" sourceRef="ExclusiveGateway_DeliveryOutcome" targetRef="ParallelGateway_Join">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">deliveryStatus == "Delivered"</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="Flow_Invalid" name="Invalid" sourceRef="ExclusiveGateway_ValidBooking" targetRef="UserTask_CorrectBooking">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">isValid == false</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="Flow_RetryPickup" sourceRef="UserTask_ReschedulePickup" targetRef="ServiceTask_SchedulePickup" />
+    <bpmn2:sequenceFlow id="Flow_Valid" name="Valid" sourceRef="ExclusiveGateway_ValidBooking" targetRef="ServiceTask_SchedulePickup">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">isValid == true</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="Flow_2" sourceRef="BusinessRuleTask_ValidateBooking" targetRef="ExclusiveGateway_ValidBooking" />
+    <bpmn2:sequenceFlow id="Flow_Corrected" sourceRef="UserTask_CorrectBooking" targetRef="BusinessRuleTask_ValidateBooking" />
+    <bpmn2:sequenceFlow id="Flow_1" sourceRef="StartEvent_Booking" targetRef="BusinessRuleTask_ValidateBooking" />
+    <bpmn2:sequenceFlow id="Flow_PickupCancel" name="Failed (&#62;2 tries)" sourceRef="ExclusiveGateway_PickupCheck" targetRef="EndEvent_PickupCancelled">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">pickupSuccess == false and pickupAttempts &gt; 2</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="Flow_PickupFailed" name="Failed (&#60;=2 tries)" sourceRef="ExclusiveGateway_PickupCheck" targetRef="UserTask_ReschedulePickup">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">pickupSuccess == false and pickupAttempts &lt;= 2</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="Flow_PickupSuccess" name="Success" sourceRef="ExclusiveGateway_PickupCheck" targetRef="ManualTask_CollectScanParcel">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">pickupSuccess == true</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="Flow_3" sourceRef="ServiceTask_SchedulePickup" targetRef="ExclusiveGateway_PickupCheck" />
+    <bpmn2:sequenceFlow id="Flow_5" sourceRef="UserTask_InspectDamage" targetRef="ExclusiveGateway_InsuranceCheck" />
+    <bpmn2:sequenceFlow id="Flow_Cancel" name="Cancelled" sourceRef="ExclusiveGateway_HubRouting" targetRef="UserTask_StopShipment">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">hubStatus == "Cancelled"</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="Flow_Customs" name="Customs Hold" sourceRef="ExclusiveGateway_HubRouting" targetRef="ServiceTask_CustomsHold">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">hubStatus == "CustomsHold"</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="Flow_Delay" name="Transit Delay" sourceRef="ExclusiveGateway_HubRouting" targetRef="UserTask_RerouteShipment">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">hubStatus == "Delayed"</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="Flow_Hub_Damage" name="Damaged" sourceRef="ExclusiveGateway_HubRouting" targetRef="UserTask_InspectDamage">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">hubStatus == "Damaged"</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="Flow_Hub_Normal" name="Normal Transit" sourceRef="ExclusiveGateway_HubRouting" targetRef="ServiceTask_DispatchParcel">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">hubStatus == "Normal"</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="Flow_Hub_Missing" name="Missing Parcel" sourceRef="ExclusiveGateway_HubRouting" targetRef="ServiceTask_InitiateTracing">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">hubStatus == "Missing"</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="Flow_Hub_SortDone" sourceRef="ServiceTask_SortScanParcel" targetRef="ExclusiveGateway_HubRouting" />
+    <bpmn2:sequenceFlow id="Flow_Track_Complete" sourceRef="MessageEvent_ScanReceived" targetRef="ParallelGateway_Join" />
+    <bpmn2:sequenceFlow id="Flow_Track_Timeout" sourceRef="EventBasedGateway_Tracking" targetRef="TimerEvent_48HrScan" />
+    <bpmn2:sequenceFlow id="Flow_Track_Normal" sourceRef="EventBasedGateway_Tracking" targetRef="MessageEvent_ScanReceived" />
+    <bpmn2:sequenceFlow id="Flow_Track_Wait" sourceRef="ServiceTask_NotifyCustomer" targetRef="EventBasedGateway_Tracking" />
+    <bpmn2:sequenceFlow id="Flow_Track_Start" sourceRef="ParallelGateway_Split" targetRef="ServiceTask_NotifyCustomer" />
+    <bpmn2:sequenceFlow id="Flow_Move_Hub" sourceRef="ParallelGateway_Split" targetRef="ServiceTask_SortScanParcel" />
+    <bpmn2:sequenceFlow id="Flow_4" sourceRef="ManualTask_CollectScanParcel" targetRef="ParallelGateway_Split" />
+    <bpmn2:subProcess id="SubProcess_Claims" name="Claims Processing Subprocess">
+      <bpmn2:incoming>Flow_Insured</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_Claims_End</bpmn2:outgoing>
+      <bpmn2:startEvent id="StartEvent_Claims" name="Claims Initiated">
+        <bpmn2:outgoing>Flow_C1</bpmn2:outgoing>
+      </bpmn2:startEvent>
+      <bpmn2:userTask id="UserTask_ProcessClaim" name="Process refund, replacement, or reshipment">
+        <bpmn2:incoming>Flow_C1</bpmn2:incoming>
+        <bpmn2:outgoing>Flow_C2</bpmn2:outgoing>
+      </bpmn2:userTask>
+      <bpmn2:endEvent id="EndEvent_Claims" name="Claims Resolved">
+        <bpmn2:incoming>Flow_C2</bpmn2:incoming>
+      </bpmn2:endEvent>
+      <bpmn2:sequenceFlow id="Flow_C1" sourceRef="StartEvent_Claims" targetRef="UserTask_ProcessClaim" />
+      <bpmn2:sequenceFlow id="Flow_C2" sourceRef="UserTask_ProcessClaim" targetRef="EndEvent_Claims" />
+    </bpmn2:subProcess>
+    <bpmn2:endEvent id="EndEvent_Returned" name="Returned to Sender">
+      <bpmn2:incoming>Flow_Return_End</bpmn2:incoming>
+      <bpmn2:terminateEventDefinition id="TerminateEventDefinition_Returned" />
+    </bpmn2:endEvent>
+    <bpmn2:intermediateCatchEvent id="TimerEvent_DepotHold" name="Hold at depot for 7 days">
+      <bpmn2:incoming>Flow_AttemptLimitExceeded</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_DepotTimeout</bpmn2:outgoing>
+      <bpmn2:timerEventDefinition id="TimerEventDefinition_DepotHold">
+        <bpmn2:timeDuration>P7D</bpmn2:timeDuration>
+      </bpmn2:timerEventDefinition>
+    </bpmn2:intermediateCatchEvent>
+    <bpmn2:userTask id="UserTask_ReturnToSender" name="Return parcel to sender and adjust charges">
+      <bpmn2:incoming>Flow_RefusedCOD</bpmn2:incoming>
+      <bpmn2:incoming>Flow_DepotTimeout</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_Return_End</bpmn2:outgoing>
+    </bpmn2:userTask>
+    <bpmn2:exclusiveGateway id="ExclusiveGateway_AttemptCheck" name="Attempt Limit Reached?" default="Flow_RetryMore">
+      <bpmn2:incoming>Flow_8</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_RetryMore</bpmn2:outgoing>
+      <bpmn2:outgoing>Flow_AttemptLimitExceeded</bpmn2:outgoing>
+    </bpmn2:exclusiveGateway>
+    <bpmn2:userTask id="UserTask_RetryDelivery" name="Retry delivery (Max 3 attempts)">
+      <bpmn2:incoming>Flow_RecipientUnavail</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_8</bpmn2:outgoing>
+    </bpmn2:userTask>
+    <bpmn2:userTask id="UserTask_DeliverParcel" name="Deliver parcel to recipient">
+      <bpmn2:incoming>Flow_6</bpmn2:incoming>
+      <bpmn2:incoming>Flow_RetryMore</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_Deliver_Recipient</bpmn2:outgoing>
+    </bpmn2:userTask>
+    <bpmn2:serviceTask id="ServiceTask_DispatchParcel" name="Dispatch parcel for delivery and notify recipient">
+      <bpmn2:incoming>Flow_Hub_Normal</bpmn2:incoming>
+      <bpmn2:incoming>Flow_Reroute_Done</bpmn2:incoming>
+      <bpmn2:incoming>Flow_Customs_Cleared</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_6</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+    <bpmn2:serviceTask id="ServiceTask_CustomsHold" name="Request missing documents for customs">
+      <bpmn2:incoming>Flow_Customs</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_Customs_Wait</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+    <bpmn2:endEvent id="EndEvent_ClaimSettled" name="Claims Resolved &#38; Settled">
+      <bpmn2:incoming>Flow_Claims_End</bpmn2:incoming>
+      <bpmn2:terminateEventDefinition id="TerminateEventDefinition_ClaimSettled" />
+    </bpmn2:endEvent>
+    <bpmn2:endEvent id="EndEvent_DamageReturned" name="Returned to Sender">
+      <bpmn2:incoming>Flow_Damage_End</bpmn2:incoming>
+      <bpmn2:terminateEventDefinition id="TerminateEventDefinition_DamageReturned" />
+    </bpmn2:endEvent>
+    <bpmn2:serviceTask id="ServiceTask_RecordDamage" name="Record damage and inform shipper">
+      <bpmn2:incoming>Flow_NotInsured</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_Damage_End</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+    <bpmn2:exclusiveGateway id="ExclusiveGateway_InsuranceCheck" name="Is Parcel Insured?" default="Flow_NotInsured">
+      <bpmn2:incoming>Flow_5</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_Insured</bpmn2:outgoing>
+      <bpmn2:outgoing>Flow_NotInsured</bpmn2:outgoing>
+    </bpmn2:exclusiveGateway>
+    <bpmn2:endEvent id="EndEvent_Cancelled" name="Shipment Cancelled">
+      <bpmn2:incoming>Flow_Cancel_End</bpmn2:incoming>
+      <bpmn2:terminateEventDefinition id="TerminateEventDefinition_Cancelled" />
+    </bpmn2:endEvent>
+    <bpmn2:intermediateCatchEvent id="TimerEvent_CustomsTimer" name="5-Day Customs Timeout">
+      <bpmn2:incoming>Flow_Customs_Timer</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_Customs_Timeout</bpmn2:outgoing>
+      <bpmn2:timerEventDefinition id="TimerEventDefinition_Customs">
+        <bpmn2:timeDuration>P5D</bpmn2:timeDuration>
+      </bpmn2:timerEventDefinition>
+    </bpmn2:intermediateCatchEvent>
+    <bpmn2:userTask id="UserTask_StopShipment" name="Stop shipment and return parcel">
+      <bpmn2:incoming>Flow_Cancel</bpmn2:incoming>
+      <bpmn2:incoming>Flow_Customs_Timeout</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_Cancel_End</bpmn2:outgoing>
+    </bpmn2:userTask>
+    <bpmn2:intermediateCatchEvent id="MessageEvent_DocsReceived" name="Documents Received">
+      <bpmn2:incoming>Flow_Customs_Doc</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_Customs_Cleared</bpmn2:outgoing>
+      <bpmn2:messageEventDefinition id="MessageEventDefinition_DocsReceived" />
+    </bpmn2:intermediateCatchEvent>
+    <bpmn2:eventBasedGateway id="EventBasedGateway_Customs" name="Wait for Documents or Timeout">
+      <bpmn2:incoming>Flow_Customs_Wait</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_Customs_Doc</bpmn2:outgoing>
+      <bpmn2:outgoing>Flow_Customs_Timer</bpmn2:outgoing>
+    </bpmn2:eventBasedGateway>
+    <bpmn2:endEvent id="EndEvent_PickupCancelled" name="Booking Cancelled">
+      <bpmn2:incoming>Flow_PickupCancel</bpmn2:incoming>
+      <bpmn2:terminateEventDefinition id="TerminateEventDefinition_PickupCancelled" />
+    </bpmn2:endEvent>
+    <bpmn2:serviceTask id="ServiceTask_InitiateTracing" name="Initiate parcel tracing">
+      <bpmn2:incoming>Flow_Trace_Trigger</bpmn2:incoming>
+      <bpmn2:incoming>Flow_Hub_Missing</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_Trace_Wait</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+    <bpmn2:intermediateCatchEvent id="TimerEvent_5DayTrace" name="5 Days Not Found">
+      <bpmn2:incoming>Flow_Trace_Wait</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_Lost_End</bpmn2:outgoing>
+      <bpmn2:timerEventDefinition id="TimerEventDefinition_5DayTrace">
+        <bpmn2:timeDuration>P5D</bpmn2:timeDuration>
+      </bpmn2:timerEventDefinition>
+    </bpmn2:intermediateCatchEvent>
+    <bpmn2:endEvent id="EndEvent_Lost" name="Shipment Lost">
+      <bpmn2:incoming>Flow_Lost_End</bpmn2:incoming>
+      <bpmn2:terminateEventDefinition id="TerminateEventDefinition_Lost" />
+    </bpmn2:endEvent>
+    <bpmn2:intermediateCatchEvent id="TimerEvent_48HrScan" name="48 Hours No Scan">
+      <bpmn2:incoming>Flow_Track_Timeout</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_Trace_Trigger</bpmn2:outgoing>
+      <bpmn2:timerEventDefinition id="TimerEventDefinition_48Hr">
+        <bpmn2:timeDuration>PT48H</bpmn2:timeDuration>
+      </bpmn2:timerEventDefinition>
+    </bpmn2:intermediateCatchEvent>
+    <bpmn2:userTask id="UserTask_RerouteShipment" name="Reroute or assign alternative vehicle">
+      <bpmn2:incoming>Flow_Delay</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_Reroute_Done</bpmn2:outgoing>
+    </bpmn2:userTask>
+    <bpmn2:endEvent id="EndEvent_Delivered" name="Shipment Delivered">
+      <bpmn2:incoming>Flow_10</bpmn2:incoming>
+    </bpmn2:endEvent>
+    <bpmn2:userTask id="UserTask_CloseShipment" name="Close shipment and generate invoice">
+      <bpmn2:incoming>Flow_9</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_10</bpmn2:outgoing>
+    </bpmn2:userTask>
+    <bpmn2:parallelGateway id="ParallelGateway_Join" name="Join Movement and Tracking">
+      <bpmn2:incoming>Flow_DeliveredOK</bpmn2:incoming>
+      <bpmn2:incoming>Flow_Track_Complete</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_9</bpmn2:outgoing>
+    </bpmn2:parallelGateway>
+    <bpmn2:manualTask id="ManualTask_CollectScanParcel" name="Collect and scan parcel">
+      <bpmn2:incoming>Flow_PickupSuccess</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_4</bpmn2:outgoing>
+    </bpmn2:manualTask>
+    <bpmn2:userTask id="UserTask_CorrectBooking" name="Return booking for correction">
+      <bpmn2:incoming>Flow_Invalid</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_Corrected</bpmn2:outgoing>
+    </bpmn2:userTask>
+    <bpmn2:startEvent id="StartEvent_Booking" name="Shipper books shipment">
+      <bpmn2:outgoing>Flow_1</bpmn2:outgoing>
+    </bpmn2:startEvent>
+    <bpmn2:userTask id="UserTask_ReschedulePickup" name="Reschedule pickup (Max 2 attempts)">
+      <bpmn2:incoming>Flow_PickupFailed</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_RetryPickup</bpmn2:outgoing>
+    </bpmn2:userTask>
+    <bpmn2:exclusiveGateway id="ExclusiveGateway_ValidBooking" name="Booking Valid?" default="Flow_Valid">
+      <bpmn2:incoming>Flow_2</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_Valid</bpmn2:outgoing>
+      <bpmn2:outgoing>Flow_Invalid</bpmn2:outgoing>
+    </bpmn2:exclusiveGateway>
+    <bpmn2:serviceTask id="ServiceTask_SchedulePickup" name="Schedule pickup and assign agent">
+      <bpmn2:incoming>Flow_Valid</bpmn2:incoming>
+      <bpmn2:incoming>Flow_RetryPickup</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_3</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+    <bpmn2:businessRuleTask id="BusinessRuleTask_ValidateBooking" name="Validate address and charges" camunda:resultVariable="tariffResult" camunda:decisionRef="calculate-shipping-charges">
+      <bpmn2:incoming>Flow_1</bpmn2:incoming>
+      <bpmn2:incoming>Flow_Corrected</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_2</bpmn2:outgoing>
+    </bpmn2:businessRuleTask>
+    <bpmn2:exclusiveGateway id="ExclusiveGateway_PickupCheck" name="Pickup Successful?" default="Flow_PickupSuccess">
+      <bpmn2:incoming>Flow_3</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_PickupSuccess</bpmn2:outgoing>
+      <bpmn2:outgoing>Flow_PickupFailed</bpmn2:outgoing>
+      <bpmn2:outgoing>Flow_PickupCancel</bpmn2:outgoing>
+    </bpmn2:exclusiveGateway>
+    <bpmn2:userTask id="UserTask_InspectDamage" name="Inspect damaged parcel">
+      <bpmn2:incoming>Flow_Hub_Damage</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_5</bpmn2:outgoing>
+    </bpmn2:userTask>
+    <bpmn2:exclusiveGateway id="ExclusiveGateway_HubRouting" name="Hub Sorting Outcome?" default="Flow_Hub_Normal">
+      <bpmn2:incoming>Flow_Hub_SortDone</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_Hub_Normal</bpmn2:outgoing>
+      <bpmn2:outgoing>Flow_Hub_Damage</bpmn2:outgoing>
+      <bpmn2:outgoing>Flow_Delay</bpmn2:outgoing>
+      <bpmn2:outgoing>Flow_Customs</bpmn2:outgoing>
+      <bpmn2:outgoing>Flow_Hub_Missing</bpmn2:outgoing>
+      <bpmn2:outgoing>Flow_Cancel</bpmn2:outgoing>
+    </bpmn2:exclusiveGateway>
+    <bpmn2:serviceTask id="ServiceTask_SortScanParcel" name="Sort and scan parcel at hub">
+      <bpmn2:incoming>Flow_Move_Hub</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_Hub_SortDone</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+    <bpmn2:intermediateCatchEvent id="MessageEvent_ScanReceived" name="Scan / Delivery Update Received">
+      <bpmn2:incoming>Flow_Track_Normal</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_Track_Complete</bpmn2:outgoing>
+      <bpmn2:messageEventDefinition id="MessageEventDefinition_ScanReceived" />
+    </bpmn2:intermediateCatchEvent>
+    <bpmn2:eventBasedGateway id="EventBasedGateway_Tracking" name="Wait for Scan or 48-Hr Timeout">
+      <bpmn2:incoming>Flow_Track_Wait</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_Track_Normal</bpmn2:outgoing>
+      <bpmn2:outgoing>Flow_Track_Timeout</bpmn2:outgoing>
+    </bpmn2:eventBasedGateway>
+    <bpmn2:serviceTask id="ServiceTask_NotifyCustomer" name="Notify customer of tracking updates">
+      <bpmn2:incoming>Flow_Track_Start</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_Track_Wait</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+    <bpmn2:parallelGateway id="ParallelGateway_Split" name="Split Movement and Tracking">
+      <bpmn2:incoming>Flow_4</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_Move_Hub</bpmn2:outgoing>
+      <bpmn2:outgoing>Flow_Track_Start</bpmn2:outgoing>
+    </bpmn2:parallelGateway>
+    <bpmn2:userTask id="UserTask_ReceiveParcel" name="Receive parcel and provide proof of delivery">
+      <bpmn2:incoming>Flow_Deliver_Recipient</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_7</bpmn2:outgoing>
+    </bpmn2:userTask>
+    <bpmn2:exclusiveGateway id="ExclusiveGateway_DeliveryOutcome" name="Delivery Outcome?" default="Flow_DeliveredOK">
+      <bpmn2:incoming>Flow_7</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_DeliveredOK</bpmn2:outgoing>
+      <bpmn2:outgoing>Flow_RecipientUnavail</bpmn2:outgoing>
+      <bpmn2:outgoing>Flow_RefusedCOD</bpmn2:outgoing>
+    </bpmn2:exclusiveGateway>
+  </bpmn2:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Collaboration_Logistics">
+    <bpmndi:BPMNPlane id="BPMNPlane_Collaboration_Logistics" bpmnElement="Collaboration_Logistics">
+      <bpmndi:BPMNShape id="Participant_Courier_di" bpmnElement="Participant_Courier" isHorizontal="true" bioc:fill="#f3f4f6" color:background-color="#f3f4f6">
+        <dc:Bounds x="170" y="85" width="4410" height="2025" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Recipient_di" bpmnElement="Lane_Recipient" isHorizontal="true" bioc:fill="#f3f4f6" color:background-color="#f3f4f6">
+        <dc:Bounds x="200" y="1940" width="4380" height="170" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_DeliveryAgent_di" bpmnElement="Lane_DeliveryAgent" isHorizontal="true" bioc:fill="#f3f4f6" color:background-color="#f3f4f6">
+        <dc:Bounds x="200" y="1680" width="4380" height="260" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_ClaimsDepartment_di" bpmnElement="Lane_ClaimsDepartment" isHorizontal="true" bioc:fill="#f3f4f6" color:background-color="#f3f4f6">
+        <dc:Bounds x="200" y="1340" width="4380" height="340" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Warehouse_di" bpmnElement="Lane_Warehouse" isHorizontal="true" bioc:fill="#f3f4f6" color:background-color="#f3f4f6">
+        <dc:Bounds x="200" y="1095" width="4380" height="245" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_PickupAgent_di" bpmnElement="Lane_PickupAgent" isHorizontal="true" bioc:fill="#f3f4f6" color:background-color="#f3f4f6">
+        <dc:Bounds x="200" y="925" width="4380" height="170" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Dispatcher_di" bpmnElement="Lane_Dispatcher" isHorizontal="true" bioc:fill="#f3f4f6" color:background-color="#f3f4f6">
+        <dc:Bounds x="200" y="315" width="4380" height="610" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Shipper_di" bpmnElement="Lane_Shipper" isHorizontal="true" bioc:fill="#f3f4f6" color:background-color="#f3f4f6">
+        <dc:Bounds x="200" y="85" width="4380" height="230" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SubProcess_Claims_di" bpmnElement="SubProcess_Claims" isExpanded="true">
+        <dc:Bounds x="2040" y="1410" width="550" height="220" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Claims_di" bpmnElement="StartEvent_Claims">
+        <dc:Bounds x="2092" y="1502" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2072" y="1545" width="76" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_ProcessClaim_di" bpmnElement="UserTask_ProcessClaim">
+        <dc:Bounds x="2190" y="1480" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Claims_di" bpmnElement="EndEvent_Claims">
+        <dc:Bounds x="2402" y="1502" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2379" y="1545" width="83" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_C1_di" bpmnElement="Flow_C1">
+        <di:waypoint x="2128" y="1520" />
+        <di:waypoint x="2190" y="1520" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_C2_di" bpmnElement="Flow_C2">
+        <di:waypoint x="2330" y="1520" />
+        <di:waypoint x="2402" y="1520" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="EndEvent_Returned_di" bpmnElement="EndEvent_Returned">
+        <dc:Bounds x="4502" y="1772" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="4491" y="1815" width="58" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TimerEvent_DepotHold_di" bpmnElement="TimerEvent_DepotHold">
+        <dc:Bounds x="4222" y="1772" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="4200" y="1815" width="82" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_ReturnToSender_di" bpmnElement="UserTask_ReturnToSender">
+        <dc:Bounds x="4320" y="1750" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ExclusiveGateway_AttemptCheck_di" bpmnElement="ExclusiveGateway_AttemptCheck" isMarkerVisible="true">
+        <dc:Bounds x="3935" y="1765" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3927" y="1824.5" width="65" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_RetryDelivery_di" bpmnElement="UserTask_RetryDelivery">
+        <dc:Bounds x="3410" y="1825" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_DeliverParcel_di" bpmnElement="UserTask_DeliverParcel">
+        <dc:Bounds x="3240" y="1730" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_DispatchParcel_di" bpmnElement="ServiceTask_DispatchParcel">
+        <dc:Bounds x="3030" y="1730" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_CustomsHold_di" bpmnElement="ServiceTask_CustomsHold">
+        <dc:Bounds x="2620" y="665" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_ClaimSettled_di" bpmnElement="EndEvent_ClaimSettled">
+        <dc:Bounds x="2700" y="1482" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2677" y="1525" width="83" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_DamageReturned_di" bpmnElement="EndEvent_DamageReturned">
+        <dc:Bounds x="2700" y="1202" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2689" y="1248" width="58" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_RecordDamage_di" bpmnElement="ServiceTask_RecordDamage">
+        <dc:Bounds x="2480" y="1180" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ExclusiveGateway_InsuranceCheck_di" bpmnElement="ExclusiveGateway_InsuranceCheck" isMarkerVisible="true">
+        <dc:Bounds x="2235" y="1195" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2215" y="1171" width="89" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Cancelled_di" bpmnElement="EndEvent_Cancelled">
+        <dc:Bounds x="3502" y="752" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3496" y="795" width="49" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TimerEvent_CustomsTimer_di" bpmnElement="TimerEvent_CustomsTimer">
+        <dc:Bounds x="2982" y="752" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2962" y="722" width="76" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_StopShipment_di" bpmnElement="UserTask_StopShipment">
+        <dc:Bounds x="3190" y="730" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="MessageEvent_DocsReceived_di" bpmnElement="MessageEvent_DocsReceived">
+        <dc:Bounds x="2955" y="872" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2945" y="834.5" width="56" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EventBasedGateway_Customs_di" bpmnElement="EventBasedGateway_Customs">
+        <dc:Bounds x="2835" y="745" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2825" y="695" width="69" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_PickupCancelled_di" bpmnElement="EndEvent_PickupCancelled">
+        <dc:Bounds x="1232" y="217" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1226" y="187" width="49" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_InitiateTracing_di" bpmnElement="ServiceTask_InitiateTracing">
+        <dc:Bounds x="2110" y="455" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TimerEvent_5DayTrace_di" bpmnElement="TimerEvent_5DayTrace">
+        <dc:Bounds x="2362" y="487" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2336" y="530" width="89" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Lost_di" bpmnElement="EndEvent_Lost">
+        <dc:Bounds x="2472" y="487" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2455" y="530" width="71" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TimerEvent_48HrScan_di" bpmnElement="TimerEvent_48HrScan">
+        <dc:Bounds x="1855" y="457" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1828" y="500" width="90" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_RerouteShipment_di" bpmnElement="UserTask_RerouteShipment">
+        <dc:Bounds x="2400" y="795" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Delivered_di" bpmnElement="EndEvent_Delivered">
+        <dc:Bounds x="4405" y="367" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="4400" y="410" width="47" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_CloseShipment_di" bpmnElement="UserTask_CloseShipment">
+        <dc:Bounds x="4203" y="345" width="120" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ParallelGateway_Join_di" bpmnElement="ParallelGateway_Join">
+        <dc:Bounds x="4073" y="360" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="4060" y="323" width="75" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ManualTask_CollectScanParcel_di" bpmnElement="ManualTask_CollectScanParcel">
+        <dc:Bounds x="1120" y="985" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_CorrectBooking_di" bpmnElement="UserTask_CorrectBooking">
+        <dc:Bounds x="560" y="195" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Booking_di" bpmnElement="StartEvent_Booking">
+        <dc:Bounds x="282" y="217" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="265" y="260" width="71" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_ReschedulePickup_di" bpmnElement="UserTask_ReschedulePickup">
+        <dc:Bounds x="1170" y="435" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ExclusiveGateway_ValidBooking_di" bpmnElement="ExclusiveGateway_ValidBooking" isMarkerVisible="true">
+        <dc:Bounds x="615" y="520" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="604" y="580" width="73" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_SchedulePickup_di" bpmnElement="ServiceTask_SchedulePickup">
+        <dc:Bounds x="820" y="475" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BusinessRuleTask_ValidateBooking_di" bpmnElement="BusinessRuleTask_ValidateBooking">
+        <dc:Bounds x="360" y="505" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ExclusiveGateway_PickupCheck_di" bpmnElement="ExclusiveGateway_PickupCheck" isMarkerVisible="true">
+        <dc:Bounds x="1015" y="450" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1010" y="413" width="60" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_InspectDamage_di" bpmnElement="UserTask_InspectDamage">
+        <dc:Bounds x="2000" y="1165" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ExclusiveGateway_HubRouting_di" bpmnElement="ExclusiveGateway_HubRouting" isMarkerVisible="true">
+        <dc:Bounds x="1758" y="1170" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1703" y="1151" width="59" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_SortScanParcel_di" bpmnElement="ServiceTask_SortScanParcel">
+        <dc:Bounds x="1563" y="1155" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="MessageEvent_ScanReceived_di" bpmnElement="MessageEvent_ScanReceived">
+        <dc:Bounds x="1855" y="367" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1831" y="410" width="85" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EventBasedGateway_Tracking_di" bpmnElement="EventBasedGateway_Tracking">
+        <dc:Bounds x="1748" y="360" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1734" y="323" width="79" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_NotifyCustomer_di" bpmnElement="ServiceTask_NotifyCustomer">
+        <dc:Bounds x="1563" y="345" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ParallelGateway_Split_di" bpmnElement="ParallelGateway_Split">
+        <dc:Bounds x="1438" y="360" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1425" y="330" width="76" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_ReceiveParcel_di" bpmnElement="UserTask_ReceiveParcel">
+        <dc:Bounds x="3435" y="1970" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ExclusiveGateway_DeliveryOutcome_di" bpmnElement="ExclusiveGateway_DeliveryOutcome" isMarkerVisible="true">
+        <dc:Bounds x="3895" y="1985" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3834.5" y="2026" width="51" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Return_End_di" bpmnElement="Flow_Return_End">
+        <di:waypoint x="4440" y="1790" />
+        <di:waypoint x="4502" y="1790" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_DepotTimeout_di" bpmnElement="Flow_DepotTimeout">
+        <di:waypoint x="4258" y="1790" />
+        <di:waypoint x="4320" y="1790" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_AttemptLimitExceeded_di" bpmnElement="Flow_AttemptLimitExceeded">
+        <di:waypoint x="3983" y="1792" />
+        <di:waypoint x="4222" y="1792" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="4075" y="1774" width="63" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_8_di" bpmnElement="Flow_8">
+        <di:waypoint x="3530" y="1840" />
+        <di:waypoint x="3733" y="1840" />
+        <di:waypoint x="3733" y="1790" />
+        <di:waypoint x="3935" y="1790" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_RetryMore_di" bpmnElement="Flow_RetryMore">
+        <di:waypoint x="3960" y="1765" />
+        <di:waypoint x="3960" y="1710" />
+        <di:waypoint x="3300" y="1710" />
+        <di:waypoint x="3300" y="1730" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3930" y="1706" width="69" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6">
+        <di:waypoint x="3150" y="1770" />
+        <di:waypoint x="3240" y="1770" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Claims_End_di" bpmnElement="Flow_Claims_End">
+        <di:waypoint x="2590" y="1500" />
+        <di:waypoint x="2700" y="1500" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Damage_End_di" bpmnElement="Flow_Damage_End">
+        <di:waypoint x="2600" y="1220" />
+        <di:waypoint x="2700" y="1220" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_NotInsured_di" bpmnElement="Flow_NotInsured">
+        <di:waypoint x="2285" y="1220" />
+        <di:waypoint x="2480" y="1220" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2357" y="1203" width="57" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Insured_di" bpmnElement="Flow_Insured">
+        <di:waypoint x="2260" y="1245" />
+        <di:waypoint x="2260" y="1410" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2267" y="1320" width="37" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Cancel_End_di" bpmnElement="Flow_Cancel_End">
+        <di:waypoint x="3310" y="770" />
+        <di:waypoint x="3502" y="770" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Customs_Timeout_di" bpmnElement="Flow_Customs_Timeout">
+        <di:waypoint x="3018" y="770" />
+        <di:waypoint x="3190" y="770" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Customs_Cleared_di" bpmnElement="Flow_Customs_Cleared">
+        <di:waypoint x="2973" y="908" />
+        <di:waypoint x="2973" y="1750" />
+        <di:waypoint x="3030" y="1750" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2982" y="1326" width="39" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Customs_Timer_di" bpmnElement="Flow_Customs_Timer">
+        <di:waypoint x="2885" y="770" />
+        <di:waypoint x="2982" y="770" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Customs_Doc_di" bpmnElement="Flow_Customs_Doc">
+        <di:waypoint x="2860" y="795" />
+        <di:waypoint x="2860" y="890" />
+        <di:waypoint x="2955" y="890" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Customs_Wait_di" bpmnElement="Flow_Customs_Wait">
+        <di:waypoint x="2740" y="705" />
+        <di:waypoint x="2788" y="705" />
+        <di:waypoint x="2788" y="770" />
+        <di:waypoint x="2835" y="770" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_RecipientUnavail_di" bpmnElement="Flow_RecipientUnavail">
+        <di:waypoint x="3920" y="1985" />
+        <di:waypoint x="3920" y="1865" />
+        <di:waypoint x="3530" y="1865" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3911" y="1868" width="58" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_RefusedCOD_di" bpmnElement="Flow_RefusedCOD">
+        <di:waypoint x="3920" y="2035" />
+        <di:waypoint x="3920" y="2070" />
+        <di:waypoint x="4380" y="2070" />
+        <di:waypoint x="4380" y="1830" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="4301" y="2026" width="77" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_7_di" bpmnElement="Flow_7">
+        <di:waypoint x="3565" y="2010" />
+        <di:waypoint x="3895" y="2010" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Deliver_Recipient_di" bpmnElement="Flow_Deliver_Recipient">
+        <di:waypoint x="3300" y="1810" />
+        <di:waypoint x="3300" y="2010" />
+        <di:waypoint x="3435" y="2010" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Trace_Wait_di" bpmnElement="Flow_Trace_Wait">
+        <di:waypoint x="2230" y="495" />
+        <di:waypoint x="2296" y="495" />
+        <di:waypoint x="2296" y="505" />
+        <di:waypoint x="2362" y="505" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Lost_End_di" bpmnElement="Flow_Lost_End">
+        <di:waypoint x="2398" y="505" />
+        <di:waypoint x="2472" y="505" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Trace_Trigger_di" bpmnElement="Flow_Trace_Trigger">
+        <di:waypoint x="1891" y="475" />
+        <di:waypoint x="2110" y="475" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Reroute_Done_di" bpmnElement="Flow_Reroute_Done">
+        <di:waypoint x="2520" y="835" />
+        <di:waypoint x="2800" y="835" />
+        <di:waypoint x="2800" y="1800" />
+        <di:waypoint x="3030" y="1800" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_10_di" bpmnElement="Flow_10">
+        <di:waypoint x="4323" y="385" />
+        <di:waypoint x="4405" y="385" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_9_di" bpmnElement="Flow_9">
+        <di:waypoint x="4123" y="385" />
+        <di:waypoint x="4203" y="385" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_DeliveredOK_di" bpmnElement="Flow_DeliveredOK">
+        <di:waypoint x="3945" y="2010" />
+        <di:waypoint x="4098" y="2010" />
+        <di:waypoint x="4098" y="410" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="4106" y="1973" width="47" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Invalid_di" bpmnElement="Flow_Invalid">
+        <di:waypoint x="640" y="520" />
+        <di:waypoint x="640" y="275" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="654" y="389" width="32" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_RetryPickup_di" bpmnElement="Flow_RetryPickup">
+        <di:waypoint x="1230" y="435" />
+        <di:waypoint x="1230" y="375" />
+        <di:waypoint x="880" y="375" />
+        <di:waypoint x="880" y="475" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Valid_di" bpmnElement="Flow_Valid">
+        <di:waypoint x="665" y="545" />
+        <di:waypoint x="718" y="545" />
+        <di:waypoint x="718" y="515" />
+        <di:waypoint x="820" y="515" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="680" y="527" width="24" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="480" y="545" />
+        <di:waypoint x="615" y="545" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Corrected_di" bpmnElement="Flow_Corrected">
+        <di:waypoint x="560" y="235" />
+        <di:waypoint x="420" y="235" />
+        <di:waypoint x="420" y="505" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="318" y="235" />
+        <di:waypoint x="390" y="235" />
+        <di:waypoint x="390" y="505" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_PickupCancel_di" bpmnElement="Flow_PickupCancel">
+        <di:waypoint x="1040" y="450" />
+        <di:waypoint x="1040" y="235" />
+        <di:waypoint x="1232" y="235" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1128" y="236" width="77" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_PickupFailed_di" bpmnElement="Flow_PickupFailed">
+        <di:waypoint x="1065" y="475" />
+        <di:waypoint x="1170" y="475" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1033" y="449" width="84" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_PickupSuccess_di" bpmnElement="Flow_PickupSuccess">
+        <di:waypoint x="1040" y="500" />
+        <di:waypoint x="1040" y="1025" />
+        <di:waypoint x="1120" y="1025" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1050" y="520" width="42" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <di:waypoint x="940" y="515" />
+        <di:waypoint x="978" y="515" />
+        <di:waypoint x="978" y="475" />
+        <di:waypoint x="1015" y="475" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+        <di:waypoint x="2120" y="1220" />
+        <di:waypoint x="2235" y="1220" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Cancel_di" bpmnElement="Flow_Cancel">
+        <di:waypoint x="1783" y="1170" />
+        <di:waypoint x="1783" y="615" />
+        <di:waypoint x="3250" y="615" />
+        <di:waypoint x="3250" y="730" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1985" y="593" width="49" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Customs_di" bpmnElement="Flow_Customs">
+        <di:waypoint x="1783" y="1170" />
+        <di:waypoint x="1783" y="705" />
+        <di:waypoint x="2620" y="705" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1965" y="683" width="70" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Delay_di" bpmnElement="Flow_Delay">
+        <di:waypoint x="1783" y="1170" />
+        <di:waypoint x="1783" y="835" />
+        <di:waypoint x="2400" y="835" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1911" y="808" width="65" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Hub_Damage_di" bpmnElement="Flow_Hub_Damage">
+        <di:waypoint x="1808" y="1195" />
+        <di:waypoint x="1843" y="1195" />
+        <di:waypoint x="1843" y="1205" />
+        <di:waypoint x="2000" y="1205" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1849" y="1193" width="48" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Hub_Normal_di" bpmnElement="Flow_Hub_Normal">
+        <di:waypoint x="1783" y="1220" />
+        <di:waypoint x="1783" y="1770" />
+        <di:waypoint x="3030" y="1770" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1797" y="1236" width="72" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Hub_Missing_di" bpmnElement="Flow_Hub_Missing">
+        <di:waypoint x="1783" y="1170" />
+        <di:waypoint x="1783" y="540" />
+        <di:waypoint x="2110" y="519" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1785" y="553" width="72" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Hub_SortDone_di" bpmnElement="Flow_Hub_SortDone">
+        <di:waypoint x="1683" y="1195" />
+        <di:waypoint x="1758" y="1195" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Track_Complete_di" bpmnElement="Flow_Track_Complete">
+        <di:waypoint x="1891" y="385" />
+        <di:waypoint x="4073" y="385" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Track_Timeout_di" bpmnElement="Flow_Track_Timeout">
+        <di:waypoint x="1773" y="410" />
+        <di:waypoint x="1773" y="475" />
+        <di:waypoint x="1855" y="475" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Track_Normal_di" bpmnElement="Flow_Track_Normal">
+        <di:waypoint x="1798" y="385" />
+        <di:waypoint x="1855" y="385" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Track_Wait_di" bpmnElement="Flow_Track_Wait">
+        <di:waypoint x="1683" y="385" />
+        <di:waypoint x="1748" y="385" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Track_Start_di" bpmnElement="Flow_Track_Start">
+        <di:waypoint x="1488" y="385" />
+        <di:waypoint x="1563" y="385" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Move_Hub_di" bpmnElement="Flow_Move_Hub">
+        <di:waypoint x="1463" y="410" />
+        <di:waypoint x="1463" y="1195" />
+        <di:waypoint x="1563" y="1195" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="1240" y="1025" />
+        <di:waypoint x="1380" y="1025" />
+        <di:waypoint x="1380" y="385" />
+        <di:waypoint x="1438" y="385" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn2:definitions>

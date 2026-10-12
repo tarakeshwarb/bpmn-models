@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" id="Definitions_ShippingRules" name="Shipping Calculation DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.49.0">
+  <decision id="calculate-shipping-charges" name="Calculate Shipping Charges &#38; Validate Tariff">
+    <decisionTable id="DecisionTable_ShippingCharges" hitPolicy="FIRST">
+      <input id="Input_ServiceLevel" label="Service Level">
+        <inputExpression id="InputExpr_ServiceLevel" typeRef="string">
+          <text>serviceLevel</text>
+        </inputExpression>
+        <inputValues id="UnaryTests_ServiceLevels">
+          <text>"Express","Standard"</text>
+        </inputValues>
+      </input>
+      <input id="Input_Weight" label="Parcel Weight (kg)">
+        <inputExpression id="InputExpr_Weight" typeRef="double">
+          <text>weight</text>
+        </inputExpression>
+      </input>
+      <input id="Input_AddressValid" label="Address Form Complete">
+        <inputExpression id="InputExpr_AddressValid" typeRef="boolean">
+          <text>isAddressComplete</text>
+        </inputExpression>
+      </input>
+      <output id="Output_Valid" label="Validation Result" name="isValid" typeRef="boolean" />
+      <output id="Output_Charge" label="Shipping Charge (₹)" name="shippingCharge" typeRef="double" />
+      <output id="Output_TransitDays" label="Estimated Days" name="estimatedTransitDays" typeRef="integer" />
+      <rule id="Rule_InvalidAddress">
+        <description>Missing postal code or incomplete address format</description>
+        <inputEntry id="UnaryTests_R1_1">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_R1_2">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_R1_3">
+          <text>false</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_R1_1">
+          <text>false</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_R1_2">
+          <text>0.0</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_R1_3">
+          <text>0</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_ExpressLight">
+        <description>Next-day priority air for parcels up to 5kg</description>
+        <inputEntry id="UnaryTests_R2_1">
+          <text>"Express"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_R2_2">
+          <text>&lt;= 5.0</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_R2_3">
+          <text>true</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_R2_1">
+          <text>true</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_R2_2">
+          <text>250.0</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_R2_3">
+          <text>1</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_ExpressHeavy">
+        <description>Next-day priority air for heavy parcels</description>
+        <inputEntry id="UnaryTests_R3_1">
+          <text>"Express"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_R3_2">
+          <text>&gt; 5.0</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_R3_3">
+          <text>true</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_R3_1">
+          <text>true</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_R3_2">
+          <text>600.0</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_R3_3">
+          <text>1</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_StandardLight">
+        <description>Standard ground distribution for parcels up to 5kg</description>
+        <inputEntry id="UnaryTests_R4_1">
+          <text>"Standard"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_R4_2">
+          <text>&lt;= 5.0</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_R4_3">
+          <text>true</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_R4_1">
+          <text>true</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_R4_2">
+          <text>120.0</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_R4_3">
+          <text>3</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_StandardHeavy">
+        <description>Standard ground distribution for heavy cargo</description>
+        <inputEntry id="UnaryTests_R5_1">
+          <text>"Standard"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_R5_2">
+          <text>&gt; 5.0</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_R5_3">
+          <text>true</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_R5_1">
+          <text>true</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_R5_2">
+          <text>300.0</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_R5_3">
+          <text>4</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_19n38us">
+        <inputEntry id="UnaryTests_0ulku9y">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0zxm99a">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0ektlhf">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0ig2x1g">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1tkfnvb">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_129dybg">
+          <text></text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram id="DMNDiagram_ShippingRules">
+      <dmndi:DMNShape id="DMNShape_calculate-shipping-charges" dmnElementRef="calculate-shipping-charges">
+        <dc:Bounds height="80" width="180" x="160" y="100" />
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>
